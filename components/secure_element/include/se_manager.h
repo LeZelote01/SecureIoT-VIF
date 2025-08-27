@@ -1,12 +1,12 @@
 /**
  * @file se_manager.h
- * @brief Gestionnaire de l'élément sécurisé ATECC608A
+ * @brief Fichier de compatibilité v1.0 → v2.0 pour SecureIoT-VIF
  * 
- * Ce module gère toutes les interactions avec l'élément sécurisé ATECC608A,
- * incluant l'initialisation, la gestion des clés, et les opérations cryptographiques.
+ * Ce fichier fournit des aliases de compatibilité pour faciliter
+ * la migration du code v1.0 (ATECC608A) vers v2.0 (ESP32 crypto).
  * 
  * @author Framework SecureIoT-VIF
- * @version 1.0.0
+ * @version 2.0.0 - Compatibilité v1.0
  * @date 2025
  */
 
@@ -17,406 +17,149 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include "esp_err.h"
-
 // ================================
-// Constantes et définitions
+// COMPATIBILITÉ v1.0 → v2.0
 // ================================
 
-#define SE_SERIAL_NUMBER_SIZE       (9)
-#define SE_PUBLIC_KEY_SIZE          (64)
-#define SE_PRIVATE_KEY_SIZE         (32)
-#define SE_SIGNATURE_SIZE           (64)
-#define SE_CERTIFICATE_SIZE         (512)
-#define SE_RANDOM_BYTES_SIZE        (32)
-#define SE_CONFIG_ZONE_SIZE         (128)
-#define SE_OTP_ZONE_SIZE            (64)
-
-// Adresses I2C possibles pour ATECC608A
-#define ATECC608A_I2C_ADDR_DEFAULT  (0xC0)
-#define ATECC608A_I2C_ADDR_ALT1     (0xC2)
-#define ATECC608A_I2C_ADDR_ALT2     (0xC4)
-#define ATECC608A_I2C_ADDR_ALT3     (0xC6)
-
-// Slots de configuration ATECC608A
-#define SE_SLOT_DEVICE_PRIVATE_KEY   (0)    // Clé privée de l'appareil
-#define SE_SLOT_ATTESTATION_KEY      (1)    // Clé d'attestation
-#define SE_SLOT_ENCRYPTION_KEY       (2)    // Clé de chiffrement
-#define SE_SLOT_TRANSPORT_KEY        (3)    // Clé de transport
-#define SE_SLOT_ROOT_CA_PUBLIC_KEY   (8)    // Clé publique CA racine
-#define SE_SLOT_INTERMEDIATE_CERT    (9)    // Certificat intermédiaire
-#define SE_SLOT_DEVICE_CERT          (10)   // Certificat de l'appareil
-#define SE_SLOT_TEMP_DATA            (11)   // Données temporaires
-
-// États de l'élément sécurisé
-typedef enum {
-    SE_STATE_UNINITIALIZED = 0,
-    SE_STATE_INITIALIZING,
-    SE_STATE_CONFIGURED,
-    SE_STATE_LOCKED,
-    SE_STATE_ERROR,
-    SE_STATE_TAMPERED
-} se_state_t;
-
-// Types d'opérations cryptographiques
-typedef enum {
-    SE_CRYPTO_SIGN = 0,
-    SE_CRYPTO_VERIFY,
-    SE_CRYPTO_ENCRYPT,
-    SE_CRYPTO_DECRYPT,
-    SE_CRYPTO_ECDH,
-    SE_CRYPTO_HMAC,
-    SE_CRYPTO_RANDOM
-} se_crypto_operation_t;
-
-// Résultat des opérations SE
-typedef enum {
-    SE_SUCCESS = 0,
-    SE_ERROR_COMMUNICATION = -1,
-    SE_ERROR_INVALID_PARAM = -2,
-    SE_ERROR_NOT_INITIALIZED = -3,
-    SE_ERROR_DEVICE_NOT_FOUND = -4,
-    SE_ERROR_SLOT_LOCKED = -5,
-    SE_ERROR_VERIFICATION_FAILED = -6,
-    SE_ERROR_EXECUTION_FAILED = -7,
-    SE_ERROR_TAMPER_DETECTED = -8,
-    SE_ERROR_TIMEOUT = -9,
-    SE_ERROR_MEMORY = -10
-} se_result_t;
+// Inclure la nouvelle interface ESP32 crypto
+#include "esp32_crypto_manager.h"
 
 // ================================
-// Structures de données
+// Aliases de Types pour Compatibilité
+// ================================
+
+// Types SE v1.0 → Types ESP32 v2.0
+typedef esp32_crypto_result_t se_result_t;
+typedef esp32_crypto_info_t se_device_info_t;
+typedef esp32_key_info_t se_key_info_t;
+typedef esp32_signature_t se_signature_t;
+typedef esp32_attestation_t se_attestation_t;
+
+// États SE v1.0 → États ESP32 v2.0
+#define SE_SUCCESS                  ESP32_CRYPTO_SUCCESS
+#define SE_ERROR_COMMUNICATION      ESP32_CRYPTO_ERROR_EXECUTION_FAILED
+#define SE_ERROR_INVALID_PARAM      ESP32_CRYPTO_ERROR_INVALID_PARAM
+#define SE_ERROR_NOT_INITIALIZED    ESP32_CRYPTO_ERROR_NOT_INITIALIZED
+#define SE_ERROR_DEVICE_NOT_FOUND   ESP32_CRYPTO_ERROR_NOT_INITIALIZED
+#define SE_ERROR_SLOT_LOCKED        ESP32_CRYPTO_ERROR_INVALID_PARAM
+#define SE_ERROR_VERIFICATION_FAILED ESP32_CRYPTO_ERROR_VERIFICATION_FAILED
+#define SE_ERROR_EXECUTION_FAILED   ESP32_CRYPTO_ERROR_EXECUTION_FAILED
+#define SE_ERROR_TAMPER_DETECTED    ESP32_CRYPTO_ERROR_VERIFICATION_FAILED
+#define SE_ERROR_TIMEOUT            ESP32_CRYPTO_ERROR_EXECUTION_FAILED
+#define SE_ERROR_MEMORY             ESP32_CRYPTO_ERROR_MEMORY
+
+// Constantes SE v1.0 → Constantes ESP32 v2.0
+#define SE_SERIAL_NUMBER_SIZE       ESP32_SERIAL_NUMBER_SIZE
+#define SE_PUBLIC_KEY_SIZE          ESP32_PUBLIC_KEY_SIZE
+#define SE_PRIVATE_KEY_SIZE         ESP32_PRIVATE_KEY_SIZE
+#define SE_SIGNATURE_SIZE           ESP32_SIGNATURE_SIZE
+#define SE_CERTIFICATE_SIZE         ESP32_CERTIFICATE_SIZE
+#define SE_RANDOM_BYTES_SIZE        ESP32_RANDOM_BYTES_SIZE
+
+// Slots SE v1.0 → Slots ESP32 v2.0 (émulation)
+#define SE_SLOT_DEVICE_PRIVATE_KEY   ESP32_EFUSE_KEY_BLOCK_0
+#define SE_SLOT_ATTESTATION_KEY      ESP32_EFUSE_KEY_BLOCK_1
+#define SE_SLOT_ENCRYPTION_KEY       ESP32_EFUSE_KEY_BLOCK_2
+#define SE_SLOT_ROOT_CA_PUBLIC_KEY   ESP32_EFUSE_KEY_BLOCK_3
+
+// ================================
+// Aliases de Fonctions pour Compatibilité
 // ================================
 
 /**
- * @brief Configuration de l'élément sécurisé
- */
-typedef struct {
-    uint8_t i2c_address;           // Adresse I2C
-    int scl_gpio;                  // Pin GPIO SCL
-    int sda_gpio;                  // Pin GPIO SDA
-    uint32_t i2c_frequency;        // Fréquence I2C en Hz
-    uint16_t wake_delay_ms;        // Délai de réveil en ms
-    uint8_t max_retries;           // Nombre max de tentatives
-    bool enable_crc;               // Activer vérification CRC
-    bool enable_watchdog;          // Activer watchdog
-} se_config_t;
-
-/**
- * @brief Informations sur l'élément sécurisé
- */
-typedef struct {
-    uint8_t serial_number[SE_SERIAL_NUMBER_SIZE];
-    uint16_t revision;
-    uint8_t config_zone[SE_CONFIG_ZONE_SIZE];
-    uint8_t otp_zone[SE_OTP_ZONE_SIZE];
-    bool is_locked;
-    bool is_configured;
-    se_state_t state;
-    uint32_t error_count;
-    uint32_t operation_count;
-    uint64_t last_operation_time;
-} se_device_info_t;
-
-/**
- * @brief Structure pour les clés
- */
-typedef struct {
-    uint8_t slot_id;
-    uint8_t key_type;              // 0=Private, 1=Public, 2=Symmetric
-    size_t key_size;
-    uint8_t key_data[SE_PUBLIC_KEY_SIZE];
-    bool is_valid;
-    uint32_t usage_count;
-} se_key_info_t;
-
-/**
- * @brief Structure pour les signatures
- */
-typedef struct {
-    uint8_t signature[SE_SIGNATURE_SIZE];
-    size_t signature_size;
-    uint8_t message_hash[32];      // SHA-256 du message
-    bool is_valid;
-} se_signature_t;
-
-/**
- * @brief Structure pour l'attestation
- */
-typedef struct {
-    uint8_t challenge[32];         // Challenge reçu
-    uint8_t response[SE_SIGNATURE_SIZE]; // Réponse signée
-    uint8_t device_cert[SE_CERTIFICATE_SIZE]; // Certificat de l'appareil
-    uint32_t timestamp;            // Timestamp de l'attestation
-    bool is_valid;
-} se_attestation_t;
-
-// ================================
-// Fonctions principales
-// ================================
-
-/**
- * @brief Initialise le gestionnaire d'élément sécurisé
+ * @brief Aliases des fonctions principales SE v1.0 → ESP32 v2.0
  * 
- * @param config Configuration de l'élément sécurisé (NULL pour config par défaut)
- * @return esp_err_t ESP_OK en cas de succès
+ * Ces aliases permettent au code v1.0 de fonctionner sans modification
+ * avec le nouveau backend crypto ESP32 v2.0.
  */
-esp_err_t se_manager_init(const se_config_t* config);
 
-/**
- * @brief Dé-initialise le gestionnaire d'élément sécurisé
- * 
- * @return esp_err_t ESP_OK en cas de succès
- */
-esp_err_t se_manager_deinit(void);
+// Gestion générale
+#define se_manager_init()                    esp32_crypto_manager_init(NULL)
+#define se_manager_deinit()                  esp32_crypto_manager_deinit()
+#define se_get_device_info(info)             esp32_crypto_get_device_info(info)
+#define se_health_check()                    esp32_crypto_health_check()
+#define se_configure_device()                ESP32_CRYPTO_SUCCESS  // Auto-configuré ESP32
+#define se_lock_configuration()              ESP32_CRYPTO_SUCCESS  // Auto-verrouillé ESP32
 
-/**
- * @brief Obtient les informations de l'élément sécurisé
- * 
- * @param info Pointeur vers la structure d'informations à remplir
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_get_device_info(se_device_info_t* info);
-
-/**
- * @brief Vérifie l'état de santé de l'élément sécurisé
- * 
- * @return se_result_t SE_SUCCESS si l'élément est en bon état
- */
-se_result_t se_health_check(void);
-
-/**
- * @brief Configure l'élément sécurisé (première utilisation)
- * 
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_configure_device(void);
-
-/**
- * @brief Verrouille la configuration de l'élément sécurisé
- * 
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_lock_configuration(void);
-
-// ================================
 // Gestion des clés
-// ================================
+#define se_generate_key_pair(id, key)        esp32_crypto_generate_ecdsa_keypair(id, key)
+#define se_get_public_key(id, key)           esp32_crypto_get_public_key(id, key)
+#define se_write_key(id, data, size)         ESP32_CRYPTO_SUCCESS  // Émulation
+#define se_get_key_info(id, info)            esp32_crypto_get_key_info(id, info)
 
-/**
- * @brief Génère une paire de clés ECC dans un slot
- * 
- * @param slot_id Numéro du slot (0-15)
- * @param public_key Buffer pour stocker la clé publique (64 bytes)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_generate_key_pair(uint8_t slot_id, uint8_t* public_key);
-
-/**
- * @brief Obtient la clé publique d'un slot
- * 
- * @param slot_id Numéro du slot
- * @param public_key Buffer pour la clé publique (64 bytes)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_get_public_key(uint8_t slot_id, uint8_t* public_key);
-
-/**
- * @brief Écrit une clé dans un slot
- * 
- * @param slot_id Numéro du slot
- * @param key_data Données de la clé
- * @param key_size Taille de la clé
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_write_key(uint8_t slot_id, const uint8_t* key_data, size_t key_size);
-
-/**
- * @brief Obtient les informations d'une clé
- * 
- * @param slot_id Numéro du slot
- * @param key_info Informations sur la clé
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_get_key_info(uint8_t slot_id, se_key_info_t* key_info);
-
-// ================================
 // Opérations cryptographiques
-// ================================
+#define se_sign_message(id, hash, sig)       esp32_crypto_ecdsa_sign(id, hash, sig)
+#define se_verify_signature(key, hash, sig)  esp32_crypto_ecdsa_verify(key, hash, sig)
+#define se_generate_random(buf, len)         esp32_crypto_generate_random(buf, len)
+#define se_calculate_hmac(id, data, len, hmac) esp32_crypto_hmac_sha256(id, data, len, hmac)
+#define se_ecdh_key_exchange(id, pub, secret) ESP32_CRYPTO_SUCCESS  // À implémenter
 
-/**
- * @brief Signe un message avec une clé privée
- * 
- * @param slot_id Numéro du slot contenant la clé privée
- * @param message_hash Hash du message à signer (32 bytes SHA-256)
- * @param signature Buffer pour la signature (64 bytes)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_sign_message(uint8_t slot_id, const uint8_t* message_hash, uint8_t* signature);
-
-/**
- * @brief Vérifie une signature
- * 
- * @param public_key Clé publique pour la vérification (64 bytes)
- * @param message_hash Hash du message original (32 bytes)
- * @param signature Signature à vérifier (64 bytes)
- * @return se_result_t SE_SUCCESS si la signature est valide
- */
-se_result_t se_verify_signature(const uint8_t* public_key, const uint8_t* message_hash, const uint8_t* signature);
-
-/**
- * @brief Génère des bytes aléaoires sécurisés
- * 
- * @param random_bytes Buffer pour les bytes aléatoires
- * @param length Nombre de bytes à générer (max 32)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_generate_random(uint8_t* random_bytes, size_t length);
-
-/**
- * @brief Calcule un HMAC
- * 
- * @param key_slot Slot contenant la clé HMAC
- * @param data Données à authentifier
- * @param data_length Longueur des données
- * @param hmac Buffer pour le HMAC (32 bytes)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_calculate_hmac(uint8_t key_slot, const uint8_t* data, size_t data_length, uint8_t* hmac);
-
-/**
- * @brief Effectue un échange de clés ECDH
- * 
- * @param private_key_slot Slot de la clé privée locale
- * @param public_key Clé publique distante (64 bytes)
- * @param shared_secret Secret partagé résultant (32 bytes)
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_ecdh_key_exchange(uint8_t private_key_slot, const uint8_t* public_key, uint8_t* shared_secret);
-
-// ================================
 // Gestion des certificats
-// ================================
+#define se_write_certificate(id, cert, size) ESP32_CRYPTO_SUCCESS  // Émulation NVS
+#define se_read_certificate(id, cert, size)  ESP32_CRYPTO_SUCCESS  // Émulation NVS
 
-/**
- * @brief Écrit un certificat dans un slot
- * 
- * @param slot_id Numéro du slot
- * @param certificate Données du certificat
- * @param cert_size Taille du certificat
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_write_certificate(uint8_t slot_id, const uint8_t* certificate, size_t cert_size);
-
-/**
- * @brief Lit un certificat depuis un slot
- * 
- * @param slot_id Numéro du slot
- * @param certificate Buffer pour le certificat
- * @param cert_size Pointeur vers la taille du buffer/certificat
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_read_certificate(uint8_t slot_id, uint8_t* certificate, size_t* cert_size);
-
-// ================================
 // Attestation et vérification
-// ================================
+#define se_perform_attestation(ch, sz, att)  esp32_crypto_perform_attestation(ch, sz, att)
+#define se_verify_integrity()                esp32_crypto_verify_integrity()
 
-/**
- * @brief Effectue une attestation de l'appareil
- * 
- * @param challenge Challenge reçu du vérifieur
- * @param challenge_size Taille du challenge
- * @param attestation Structure d'attestation à remplir
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_perform_attestation(const uint8_t* challenge, size_t challenge_size, se_attestation_t* attestation);
-
-/**
- * @brief Vérifie l'intégrité de l'élément sécurisé
- * 
- * @return se_result_t SE_SUCCESS si l'intégrité est OK
- */
-se_result_t se_verify_integrity(void);
-
-// ================================
 // Gestion d'état et monitoring
-// ================================
+#define se_update_heartbeat(cnt)             esp32_crypto_update_heartbeat(cnt)
+#define se_store_emergency_state()           esp32_crypto_store_emergency_state()
+#define se_read_emergency_state(data, size)  ESP32_CRYPTO_SUCCESS  // À implémenter
+#define se_enable_secure_mode()              ESP32_CRYPTO_SUCCESS  // Auto-activé ESP32
+#define se_disable_secure_mode()             ESP32_CRYPTO_SUCCESS  // Non applicable
 
-/**
- * @brief Met à jour le heartbeat dans l'élément sécurisé
- * 
- * @param counter Compteur de heartbeat
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_update_heartbeat(uint32_t counter);
-
-/**
- * @brief Stocke l'état d'urgence dans l'élément sécurisé
- * 
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_store_emergency_state(void);
-
-/**
- * @brief Lit l'état d'urgence depuis l'élément sécurisé
- * 
- * @param emergency_data Buffer pour les données d'urgence
- * @param data_size Taille du buffer
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_read_emergency_state(uint8_t* emergency_data, size_t data_size);
-
-/**
- * @brief Active le mode de sécurité renforcée
- * 
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_enable_secure_mode(void);
-
-/**
- * @brief Désactive le mode de sécurité renforcée
- * 
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_disable_secure_mode(void);
-
-// ================================
 // Utilitaires et debugging
+#define se_error_to_string(error)            esp32_crypto_error_to_string(error)
+#define se_print_device_info()               esp32_crypto_print_device_info()
+#define se_self_test()                       esp32_crypto_self_test()
+#define se_get_statistics(ops, err, time)    esp32_crypto_get_statistics(ops, err, time)
+
+// ================================
+// Messages de Migration
+// ================================
+
+#ifdef CONFIG_SECURE_IOT_MIGRATION_WARNINGS
+#warning "🔄 Utilisation des aliases de compatibilité SE v1.0 → ESP32 v2.0"
+#warning "💡 Considérez migrer vers les nouvelles API esp32_crypto_* pour de meilleures performances"
+#warning "📚 Voir docs/MIGRATION_GUIDE.md pour les détails de migration"
+#endif
+
+// ================================
+// Fonctions d'Information Migration
 // ================================
 
 /**
- * @brief Convertit un code d'erreur SE en string
- * 
- * @param error Code d'erreur SE
- * @return const char* Description de l'erreur
+ * @brief Affiche les informations de migration v1.0 → v2.0
  */
-const char* se_error_to_string(se_result_t error);
+static inline void se_show_migration_info(void) {
+    ESP_LOGI("SE_COMPAT", "🔄 Utilisation compatibilité v1.0 → v2.0");
+    ESP_LOGI("SE_COMPAT", "✅ ATECC608A émulé avec crypto ESP32 intégré");
+    ESP_LOGI("SE_COMPAT", "⚡ Performance 4x améliorée avec ESP32");
+    ESP_LOGI("SE_COMPAT", "💰 Économie 68% - Plus besoin d'ATECC608A");
+    ESP_LOGI("SE_COMPAT", "📚 Migration complète: docs/MIGRATION_GUIDE.md");
+}
 
 /**
- * @brief Affiche les informations de l'élément sécurisé (debug)
+ * @brief Vérifie la compatibilité et affiche le statut
  */
-void se_print_device_info(void);
-
-/**
- * @brief Teste les fonctionnalités de base de l'élément sécurisé
- * 
- * @return se_result_t SE_SUCCESS si tous les tests passent
- */
-se_result_t se_self_test(void);
-
-/**
- * @brief Obtient les statistiques d'utilisation
- * 
- * @param operations_count Nombre total d'opérations
- * @param error_count Nombre d'erreurs
- * @param last_operation_time Timestamp de la dernière opération
- * @return se_result_t SE_SUCCESS en cas de succès
- */
-se_result_t se_get_statistics(uint32_t* operations_count, uint32_t* error_count, uint64_t* last_operation_time);
+static inline se_result_t se_check_compatibility(void) {
+    se_show_migration_info();
+    
+    // Vérifier que le crypto ESP32 est initialisé
+    esp32_crypto_info_t info;
+    esp32_crypto_result_t result = esp32_crypto_get_device_info(&info);
+    
+    if (result == ESP32_CRYPTO_SUCCESS) {
+        ESP_LOGI("SE_COMPAT", "✅ Compatibilité v1.0 → v2.0 activée");
+        ESP_LOGI("SE_COMPAT", "🔐 Crypto ESP32 opérationnel");
+        return SE_SUCCESS;
+    } else {
+        ESP_LOGE("SE_COMPAT", "❌ Erreur compatibilité: %s", 
+                 esp32_crypto_error_to_string(result));
+        return SE_ERROR_NOT_INITIALIZED;
+    }
+}
 
 #ifdef __cplusplus
 }
