@@ -3,10 +3,10 @@
  * @brief Implémentation des opérations cryptographiques pour SecureIoT-VIF
  * 
  * Ce module implémente les opérations cryptographiques de haut niveau
- * en utilisant les capacités de l'ESP32 et de l'élément sécurisé ATECC608A.
+ * en utilisant les capacités crypto intégrées de l'ESP32.
  * 
  * @author Framework SecureIoT-VIF
- * @version 1.0.0
+ * @version 2.0.0 - ESP32 Crypto Intégré
  * @date 2025
  */
 
@@ -495,7 +495,7 @@ crypto_result_t crypto_generate_salt(uint8_t* salt, size_t salt_len) {
 }
 
 // ================================
-// Fonctions publiques - ECC avec élément sécurisé
+// Fonctions publiques - ECC avec crypto ESP32
 // ================================
 
 crypto_result_t crypto_ecc_generate_keypair_se(uint8_t slot_id, crypto_ecc_keypair_t* keypair) {
@@ -653,7 +653,7 @@ crypto_result_t crypto_hmac_verify_se(uint8_t key_slot, const uint8_t* data, siz
 }
 
 // ================================
-// Fonctions publiques - Génération aléatoire
+// Fonctions publiques - Génération aléatoire ESP32
 // ================================
 
 crypto_result_t crypto_random_se(uint8_t* buffer, size_t length) {
@@ -661,7 +661,7 @@ crypto_result_t crypto_random_se(uint8_t* buffer, size_t length) {
         return CRYPTO_ERROR_INVALID_PARAM;
     }
     
-    // L'ATECC608A peut générer jusqu'à 32 bytes à la fois
+    // Utiliser le TRNG intégré ESP32 pour génération par chunks optimaux
     size_t remaining = length;
     uint8_t* ptr = buffer;
     
