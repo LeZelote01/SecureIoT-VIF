@@ -85,8 +85,8 @@ class SecureIoTVIFSimulatorTests(unittest.TestCase):
         
         # Vérifier la séquence d'initialisation
         init_sequence = [
-            "Initialisation du gestionnaire d'élément sécurisé",
-            "Gestionnaire SE initialisé avec succès",
+            "Initialisation du gestionnaire crypto ESP32",
+            "Gestionnaire crypto ESP32 initialisé avec succès",
             "Initialisation du vérificateur d'intégrité",
             "Vérificateur d'intégrité initialisé",
             "Initialisation gestionnaire d'attestation",
@@ -101,8 +101,8 @@ class SecureIoTVIFSimulatorTests(unittest.TestCase):
         
         # Vérifier les tests de fonctionnement
         test_sequence = [
-            "Testing Secure Element",
-            "Auto-test SE: Succès",
+            "Testing ESP32 Crypto",
+            "Auto-test crypto ESP32: Succès",
             "Testing Firmware Integrity Verification",
             "Vérification intégrité: OK",
             "Testing Continuous Attestation",
@@ -184,16 +184,16 @@ class SecureIoTVIFSimulatorTests(unittest.TestCase):
         # Obtenir les logs d'exécution
         simulator_output = self.test_02_simulator_execution()
         
-        # Tester l'élément sécurisé (SE)
-        se_patterns = [
-            r"Initialisation du gestionnaire d'élément sécurisé ATECC608A",
-            r"Test de communication I2C sur adresse 0x[0-9A-F]+",
-            r"Gestionnaire SE initialisé avec succès",
-            r"Appareil: Serial=0x[0-9A-F]+, Rev=0x[0-9A-F]+"
+        # Tester le crypto ESP32
+        crypto_patterns = [
+            r"Initialisation du gestionnaire crypto ESP32",
+            r"Auto-test crypto ESP32 réussi",
+            r"Gestionnaire crypto ESP32 initialisé avec succès",
+            r"Device ID: [0-9A-F:]+, Chip Revision: \d+"
         ]
         
-        for pattern in se_patterns:
-            self.assertRegex(simulator_output, pattern, f"Pattern SE manquant: {pattern}")
+        for pattern in crypto_patterns:
+            self.assertRegex(simulator_output, pattern, f"Pattern crypto manquant: {pattern}")
         
         # Tester la vérification d'intégrité
         integrity_patterns = [

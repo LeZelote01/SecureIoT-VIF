@@ -61,25 +61,25 @@ class SecureIoTVIFTests(unittest.TestCase):
         
         # Vérifications
         self.assertIn("Démarrage SecureIoT-VIF", boot_log)
-        self.assertIn("Gestionnaire SE initialisé avec succès", boot_log)
+        self.assertIn("Gestionnaire crypto ESP32 initialisé avec succès", boot_log)
         self.assertIn("Vérificateur d'intégrité initialisé", boot_log)
         self.assertIn("Gestionnaire d'attestation initialisé", boot_log)
         
         print("✅ Séquence de démarrage OK")
     
     def test_secure_element_initialization(self):
-        """Test d'initialisation de l'élément sécurisé"""
-        print("🧪 Test initialisation élément sécurisé...")
+        """Test d'initialisation du crypto ESP32"""
+        print("🧪 Test initialisation crypto ESP32...")
         
         boot_log = self.read_serial_until_pattern(r"Auto-test réussi", timeout=20)
         
-        # Vérifications ATECC608A
-        self.assertIn("Initialisation du gestionnaire d'élément sécurisé", boot_log)
-        self.assertIn("Serial=0x", boot_log)  # Numéro de série
-        self.assertIn("Rev=0x", boot_log)     # Révision
+        # Vérifications crypto ESP32
+        self.assertIn("Initialisation du gestionnaire crypto ESP32", boot_log)
+        self.assertIn("Device ID:", boot_log)  # ID unique ESP32
+        self.assertIn("Chip Revision:", boot_log)     # Révision ESP32
         self.assertIn("Auto-test réussi", boot_log)
         
-        print("✅ Élément sécurisé OK")
+        print("✅ Crypto ESP32 OK")
     
     def test_integrity_verification(self):
         """Test de vérification d'intégrité"""
