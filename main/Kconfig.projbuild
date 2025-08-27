@@ -15,7 +15,7 @@ menu "SecureIoT-VIF Configuration"
             bool "Enable Secure Boot"
             default y
             help
-                Enable secure boot verification using ATECC608A.
+                Enable secure boot verification using ESP32 integrated crypto.
         
         config SECURE_IOT_ENABLE_FLASH_ENCRYPTION
             bool "Enable Flash Encryption"
