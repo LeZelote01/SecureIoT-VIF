@@ -2,7 +2,7 @@
 """
 Outil de flash et configuration pour SecureIoT-VIF v2.0 - ESP32 Crypto Intégré
 Automatise le processus de compilation, flash et monitoring
-Version optimisée pour ESP32 crypto intégré (plus d'ATECC608A)
+Version optimisée pour ESP32 crypto intégré
 """
 
 import os
@@ -134,7 +134,7 @@ def build_project():
                 print(f"  📦 Application: {app_size:,} bytes")
                 
         print("💡 Optimisations v2.0:")
-        print("  🚀 Plus petit sans librairies ATECC608A")
+        print("  🚀 Plus compact sans librairies externes")
         print("  🚀 Crypto ESP32 intégré plus efficace")
 
 def flash_project(port):
@@ -287,7 +287,7 @@ def show_version_info():
             if "2.0.0-ESP32-CRYPTO" in content:
                 version = "v2.0.0 - ESP32 Crypto Intégré 🚀"
             elif "1.0.0" in content:
-                version = "v1.0.0 - ATECC608A (Ancien)"
+                version = "v1.0.0 - Version Ancienne"
     
     print(f"Version: {version}")
     
@@ -323,7 +323,7 @@ def main():
     # Banner v2.0
     print("🚀 ===============================================")
     print("🔐 SecureIoT-VIF v2.0 - ESP32 Crypto Intégré")
-    print("💡 Plus besoin d'ATECC608A - 68% moins cher !")
+    print("💡 Solution crypto complète intégrée")
     print("⚡ Performance 4x améliorée avec crypto ESP32")
     print("🌍 Disponible partout dans le monde")
     print("🚀 ===============================================\n")
