@@ -101,7 +101,7 @@ def configure_project(args):
         print("  ✅ Secure Boot v2 + Flash Encryption")
         print("  ✅ Hardware acceleration crypto")
         print("  ✅ Intervalles optimisés (60s/30s)")
-        print("  🆕 Plus besoin d'ATECC608A !")
+        print("  🆕 Solution crypto ESP32 intégrée complète !")
         
     else:
         # Configuration interactive
@@ -154,7 +154,7 @@ def flash_project(port):
     print("  2️⃣  Vérifier les logs d'auto-test crypto ESP32")
     print("  3️⃣  Confirmer la lecture DHT22")
     print("  4️⃣  Valider l'attestation continue")
-    print("\n💡 Plus besoin de configurer l'I2C ou l'ATECC608A !")
+    print("\n💡 Setup ultra-simple avec seulement 3 connexions ESP32↔DHT22 !")
 
 def monitor_project(port):
     """Monitor les logs v2.0 avec affichage optimisé"""
@@ -298,7 +298,7 @@ def show_version_info():
         print("  ⚡ 4x plus rapide (crypto ESP32)")
         print("  🔧 Ultra simple (3 câbles vs 8+)")
         print("  🌍 Disponible partout (ESP32+DHT22)")
-        print("  🆕 Plus besoin d'ATECC608A !")
+        print("  🆕 Solution crypto ESP32 intégrée complète !")
         
         print("\n🔐 Capacités ESP32 Intégrées:")
         print("  ✅ Hardware Security Module (HSM)")
