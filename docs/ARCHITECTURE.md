@@ -2,7 +2,7 @@
 
 ## Vue d'Ensemble
 
-SecureIoT-VIF est un framework de sécurité IoT révolutionnaire qui implémente une vérification d'intégrité en temps réel et une attestation continue pour les dispositifs ESP32 équipés d'éléments sécurisés ATECC608A.
+SecureIoT-VIF est un framework de sécurité IoT révolutionnaire qui implémente une vérification d'intégrité en temps réel et une attestation continue pour les dispositifs ESP32 avec crypto intégré.
 
 ## Innovation Clés
 
@@ -14,7 +14,7 @@ SecureIoT-VIF est un framework de sécurité IoT révolutionnaire qui implément
 | **Attestation** | ✅ Continue avec renouvellement auto | ❌ Sur demande uniquement |
 | **Détection d'anomalies** | ✅ Comportementale + ML léger | ❌ Seuils fixes basiques |
 | **Architecture** | ✅ Modulaire extensible | ❌ Monolithique |
-| **Intégration SE** | ✅ Étroite ESP32+ATECC608A | ❌ Interface générique |
+| **Intégration Crypto** | ✅ Étroite ESP32 intégré | ❌ Interface générique |
 | **Gestion énergétique** | ✅ Optimisée pour IoT | ❌ Consommation élevée |
 
 ## Architecture Globale
@@ -35,7 +35,7 @@ SecureIoT-VIF est un framework de sécurité IoT révolutionnaire qui implément
 ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
 │ SECURE ELEMENT  │   │ FIRMWARE        │   │ ATTESTATION     │
 │                 │   │ VERIFICATION    │   │                 │
-│ • ATECC608A Mgr │   │ • Integrity     │   │ • Continuous    │
+│ • ESP32 Crypto  │   │ • Integrity     │   │ • Continuous    │
 │ • Crypto Ops   │   │ • Runtime Check │   │ • Remote Verify │
 │ • Key Mgmt     │   │ • Signature     │   │ • Certificate   │
 └─────────────────┘   └─────────────────┘   └─────────────────┘
@@ -60,24 +60,24 @@ SecureIoT-VIF est un framework de sécurité IoT révolutionnaire qui implément
 ### 1. Secure Element Manager
 
 **Responsabilités:**
-- Gestion complète de l'ATECC608A
+- Gestion complète du crypto ESP32 intégré
 - Opérations cryptographiques sécurisées
 - Gestion des clés et certificats
-- Communication I2C sécurisée
+- Communications crypto matérielles
 
 **Composants:**
 ```
 secure_element/
-├── se_manager.c/.h          # Interface principale ATECC608A
-├── crypto_operations.c/.h   # Opérations crypto avancées
-└── CMakeLists.txt          # Configuration build
+├── esp32_crypto_manager.c/.h   # Gestionnaire crypto ESP32 intégré
+├── crypto_operations.c/.h      # Opérations crypto avancées
+└── CMakeLists.txt              # Configuration build
 ```
 
 **APIs Principales:**
-- `se_manager_init()` - Initialisation
-- `se_generate_key_pair()` - Génération clés ECC
-- `se_sign_message()` - Signature numérique
-- `se_perform_attestation()` - Attestation d'appareil
+- `esp32_crypto_manager_init()` - Initialisation
+- `esp32_crypto_generate_ecdsa_keypair()` - Génération clés ECC
+- `esp32_crypto_ecdsa_sign()` - Signature numérique
+- `esp32_crypto_perform_attestation()` - Attestation d'appareil
 
 ### 2. Firmware Verification
 
@@ -115,7 +115,7 @@ Système d'attestation qui se renouvelle automatiquement sans intervention exter
 
 **Mécanisme:**
 ```
-Challenge Auto-généré → Signature SE → Vérification Intégrité
+Challenge Auto-généré → Signature ESP32 → Vérification Intégrité
         ↓                     ↓               ↓
     32 bytes              64 bytes        Hash firmware
     aléatoires            ECDSA           + état système
@@ -211,8 +211,8 @@ Timer 60s ───┐
 Timer 30s ───┐
              ▼
 ┌─────────────────┐    ┌─────────────────┐
-│  Challenge      │───▶│  SE Signature   │
-│  Generator      │    │  ATECC608A      │
+│  Challenge      │───▶│  ESP32 Crypto   │
+│  Generator      │    │  Signature      │
 └─────────────────┘    └─────────────────┘
          ▲                       │
          │                       ▼
@@ -243,7 +243,7 @@ Timer 30s ───┐
 - Cache des hashs pour éviter les recalculs
 
 **Opérations Cryptographiques:**
-- Utilisation maximale de l'ATECC608A (hardware)
+- Utilisation maximale du crypto ESP32 intégré (hardware)
 - Opérations asynchrones quand possible
 - Pool de buffers pour éviter les allocations
 
@@ -295,7 +295,7 @@ LEVEL 1 - LOW
 
 **Échec Attestation:**
 1. Régénération du challenge
-2. Vérification de l'intégrité SE
+2. Vérification de l'intégrité crypto ESP32
 3. Tentatives multiples
 4. Mode sécurisé si échecs persistants
 
@@ -326,8 +326,8 @@ typedef enum {
 // 2. Implémenter dans crypto_operations.c
 crypto_result_t crypto_new_algorithm(const uint8_t* input, uint8_t* output);
 
-// 3. Intégrer dans se_manager.c si nécessaire
-se_result_t se_new_operation(uint8_t slot_id, const uint8_t* data);
+// 3. Intégrer dans esp32_crypto_manager.c si nécessaire
+esp32_crypto_result_t esp32_crypto_new_operation(uint8_t slot_id, const uint8_t* data);
 ```
 
 ### Nouveaux Types d'Attestation

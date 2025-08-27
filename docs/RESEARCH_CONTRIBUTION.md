@@ -2,7 +2,7 @@
 
 ## Contexte Académique
 
-**Sujet de Mémoire**: "Détection et prévention des attaques par compromission de firmware dans les dispositifs IoT grand public : Conception d'un Framework léger de vérification d'intégrité basé sur SE/HSM embarqué"
+**Sujet de Mémoire**: "Détection et prévention des attaques par compromission de firmware dans les dispositifs IoT grand public : Conception d'un Framework léger de vérification d'intégrité basé sur crypto ESP32 intégré"
 
 ## Problématiques Adressées
 
@@ -42,12 +42,12 @@ Modulaire   Mémoire      Crypto       Non-répudiation     Corruption
 **Algorithme Innovant**:
 ```python
 def continuous_attestation():
-    challenge = se_generate_random(32)  # Challenge auto-généré
+    challenge = esp32_crypto_generate_random(32)  # Challenge auto-généré
     challenge[-4:] = current_timestamp() # Fraîcheur temporelle
     
     # Signature avec état système intégré
     system_state = hash(firmware_state + sensor_data + uptime)
-    response = se_sign(challenge + system_state)
+    response = esp32_crypto_ecdsa_sign(challenge + system_state)
     
     # Vérification d'intégrité parallèle
     integrity_status = verify_critical_sections()
@@ -200,8 +200,8 @@ Opération Normale                  -          24            25
    - Focus: Algorithme ML optimisé
    - Venue: ACM IoTDI
 
-3. **"Secure Element Integration Patterns for ESP32-based IoT Security Frameworks"**
-   - Focus: Architecture intégration SE
+3. **"Architecture d'intégration crypto ESP32 pour frameworks de sécurité IoT"**
+   - Focus: Architecture intégration crypto intégré
    - Venue: IEEE Embedded Systems Letters
 
 ### 2. Brevets Potentiels
@@ -238,7 +238,7 @@ datasets/
 
 - **Sécurité IoT**: Nouveau paradigme vérification temps réel
 - **Systèmes Embarqués**: Optimisations pour contraintes ressources
-- **Cryptographie Appliquée**: Intégration éléments sécurisés
+- **Cryptographie Appliquée**: Intégration crypto ESP32 intégré
 - **Machine Learning**: Algorithmes légers pour microcontrôleurs
 
 ### 2. Influence sur Standards
@@ -264,8 +264,8 @@ datasets/
 
 **Partenaires Potentiels**:
 - Espressif Systems (fabricant ESP32)
-- Microchip Technology (fabricant ATECC608A)
 - Constructeurs IoT (Nordic, STMicroelectronics)
+- Fabricants de solutions crypto intégrées
 
 ## Validation et Reproductibilité
 
