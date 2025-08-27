@@ -64,7 +64,7 @@ extern "C" {
 // Configuration GPIO et hardware
 // ================================
 
-// Configuration DHT22 (plus d'I2C nécessaire!)
+// Configuration DHT22 - ESP32 Crypto Intégré
 #define DHT22_GPIO_PIN                  (4)
 #define DHT22_POWER_GPIO                (5)  // GPIO pour alimenter le capteur
 
@@ -325,10 +325,10 @@ typedef struct {
 extern global_config_t g_config;
 
 // ================================
-// Compatibilité avec ancienne version ATECC608A
+// Compatibilité avec code existant
 // ================================
 
-// Aliases pour compatibilité (facilitent la migration)
+// Aliases pour compatibilité (facilitent la transition)
 #define se_manager_init()                    esp32_crypto_manager_init(NULL)
 #define se_manager_deinit()                  esp32_crypto_manager_deinit()
 #define se_get_device_info(info)             esp32_crypto_get_device_info(info)

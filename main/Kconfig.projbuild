@@ -32,26 +32,19 @@ menu "SecureIoT-VIF Configuration"
     endmenu
 
     menu "Hardware Configuration"
-        config SECURE_IOT_I2C_SCL_GPIO
-            int "I2C SCL GPIO Pin"
-            default 22
-            range 0 39
-            help
-                GPIO pin number for I2C SCL signal (for ATECC608A).
-        
-        config SECURE_IOT_I2C_SDA_GPIO
-            int "I2C SDA GPIO Pin"
-            default 21
-            range 0 39
-            help
-                GPIO pin number for I2C SDA signal (for ATECC608A).
-        
         config SECURE_IOT_DHT22_GPIO
             int "DHT22 Data GPIO Pin"
             default 4
             range 0 39
             help
                 GPIO pin number for DHT22 sensor data line.
+        
+        config SECURE_IOT_DHT22_POWER_GPIO
+            int "DHT22 Power GPIO Pin"  
+            default 5
+            range 0 39
+            help
+                GPIO pin number for DHT22 sensor power control.
         
         config SECURE_IOT_STATUS_LED_GPIO
             int "Status LED GPIO Pin"

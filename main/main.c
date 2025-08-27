@@ -292,13 +292,13 @@ static esp_err_t init_security_system(void) {
     ESP_LOGI(TAG, "🔐 === Initialisation Système de Sécurité ESP32 ===");
     
     // Initialisation du gestionnaire crypto ESP32 intégré
-    ESP_LOGI(TAG, "🔑 Initialisation crypto ESP32...");
+    ESP_LOGI(TAG, "🔑 Initialisation crypto ESP32 intégré...");
     ret = esp32_crypto_manager_init(NULL); // Configuration par défaut
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "❌ Échec initialisation crypto ESP32: %s", esp_err_to_name(ret));
         return ret;
     }
-    ESP_LOGI(TAG, "✅ Crypto ESP32 initialisé avec succès");
+    ESP_LOGI(TAG, "✅ Crypto ESP32 intégré initialisé avec succès");
     
     // Afficher les informations du dispositif
     esp32_crypto_print_device_info();
@@ -503,14 +503,14 @@ void app_main(void) {
              spi_flash_get_chip_size() / (1024 * 1024),
              (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "intégrée" : "externe");
     
-    // Afficher les capacités crypto intégrées
-    ESP_LOGI(TAG, "🔐 Capacités crypto ESP32:");
+    // Afficher les capacités crypto intégrées ESP32
+    ESP_LOGI(TAG, "🔐 Capacités crypto ESP32 intégrées:");
     ESP_LOGI(TAG, "  ✅ Hardware Security Module (HSM)");
     ESP_LOGI(TAG, "  ✅ True Random Number Generator (TRNG)");
     ESP_LOGI(TAG, "  ✅ AES/SHA/RSA Hardware Acceleration");
     ESP_LOGI(TAG, "  ✅ Secure Boot & Flash Encryption");
     ESP_LOGI(TAG, "  ✅ eFuse pour stockage sécurisé des clés");
-    ESP_LOGI(TAG, "  🆕 Plus besoin d'ATECC608A externe!");
+    ESP_LOGI(TAG, "  🎉 Solution complète sans composants externes!");
     
     // Initialisation du système de sécurité ESP32
     ret = init_security_system();
