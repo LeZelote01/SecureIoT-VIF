@@ -1,12 +1,12 @@
 /**
  * @file app_config.h
- * @brief Configuration globale du framework SecureIoT-VIF
+ * @brief Configuration globale du framework SecureIoT-VIF v2.0 - ESP32 Crypto Intégré
  * 
  * Ce fichier contient toutes les constantes, macros et configurations
- * utilisées par le framework de sécurité IoT.
+ * utilisées par le framework de sécurité IoT utilisant le crypto ESP32 intégré.
  * 
  * @author Framework SecureIoT-VIF
- * @version 1.0.0
+ * @version 2.0.0 - ESP32 Crypto Intégré
  * @date 2025
  */
 
@@ -24,8 +24,8 @@ extern "C" {
 // Configuration générale
 // ================================
 
-#define SECURE_IOT_VIF_VERSION "1.0.0"
-#define SECURE_IOT_VIF_NAME "SecureIoT-VIF"
+#define SECURE_IOT_VIF_VERSION "2.0.0-ESP32-CRYPTO"
+#define SECURE_IOT_VIF_NAME "SecureIoT-VIF-ESP32"
 
 // ================================
 // Configuration des tâches FreeRTOS
@@ -64,16 +64,7 @@ extern "C" {
 // Configuration GPIO et hardware
 // ================================
 
-// Configuration I2C pour ATECC608A
-#define I2C_MASTER_SCL_GPIO             (22)
-#define I2C_MASTER_SDA_GPIO             (21)
-#define I2C_MASTER_NUM                  (I2C_NUM_0)
-#define I2C_MASTER_FREQ_HZ              (100000)
-#define I2C_MASTER_TX_BUF_DISABLE       (0)
-#define I2C_MASTER_RX_BUF_DISABLE       (0)
-#define I2C_MASTER_TIMEOUT_MS           (1000)
-
-// Configuration DHT22
+// Configuration DHT22 (plus d'I2C nécessaire!)
 #define DHT22_GPIO_PIN                  (4)
 #define DHT22_POWER_GPIO                (5)  // GPIO pour alimenter le capteur
 
@@ -84,20 +75,23 @@ extern "C" {
 #define SECURE_RESET_GPIO               (0)  // Boot button
 
 // ================================
-// Configuration ATECC608A
+// Configuration ESP32 Crypto Intégré
 // ================================
 
-#define ATECC608A_I2C_ADDR              (0xC0)
-#define ATECC608A_WAKE_DELAY_MS         (2)
-#define ATECC608A_CMD_TIMEOUT_MS        (2000)
-#define ATECC608A_MAX_RETRIES           (3)
+// Configuration eFuse pour stockage des clés
+#define ESP32_EFUSE_DEVICE_KEY_BLOCK     (0)     // Clé privée principale
+#define ESP32_EFUSE_ATTESTATION_BLOCK    (1)     // Clé d'attestation
+#define ESP32_EFUSE_ENCRYPTION_BLOCK     (2)     // Clé de chiffrement
+#define ESP32_EFUSE_HMAC_BLOCK           (3)     // Clé HMAC
 
-// Slots de configuration ATECC608A
-#define SLOT_DEVICE_PRIVATE_KEY         (0)
-#define SLOT_ATTESTATION_KEY            (1)
-#define SLOT_ENCRYPTION_KEY             (2)
-#define SLOT_ROOT_CA_PUBLIC_KEY         (8)
-#define SLOT_DEVICE_CERT                (10)
+// Configuration Secure Boot
+#define ESP32_SECURE_BOOT_V2_ENABLED     (true)
+#define ESP32_FLASH_ENCRYPTION_ENABLED   (true)
+#define ESP32_EFUSE_PROTECTION_ENABLED   (true)
+
+// Configuration TRNG (True Random Number Generator)
+#define ESP32_TRNG_ENTROPY_THRESHOLD     (512)   // Seuil minimum d'entropie
+#define ESP32_RANDOM_GENERATION_TIMEOUT  (1000)  // Timeout génération aléatoire (ms)
 
 // ================================
 // Configuration de sécurité
@@ -111,28 +105,28 @@ extern "C" {
 
 #define CURRENT_SECURITY_LEVEL          SECURITY_LEVEL_HIGH
 
-// Tailles des clés et certificats
-#define RSA_KEY_SIZE_BITS               (2048)
-#define ECC_KEY_SIZE_BITS               (256)
-#define AES_KEY_SIZE_BITS               (256)
-#define HMAC_KEY_SIZE_BYTES             (32)
+// Tailles des clés et algorithmes crypto ESP32
+#define ECDSA_KEY_SIZE_BITS             (256)    // ECDSA P-256
+#define AES_KEY_SIZE_BITS               (256)    // AES-256
+#define RSA_KEY_SIZE_BITS               (2048)   // RSA-2048
+#define HMAC_KEY_SIZE_BYTES             (32)     // HMAC-SHA256
 
 // Tailles de hash et signatures
 #define SHA256_DIGEST_SIZE              (32)
-#define ECC_SIGNATURE_SIZE              (64)
+#define ECDSA_SIGNATURE_SIZE            (64)
 #define RSA_SIGNATURE_SIZE              (256)
 
 // ================================
 // Configuration de l'intégrité
 // ================================
 
-#define FIRMWARE_SIGNATURE_SIZE         ECC_SIGNATURE_SIZE
+#define FIRMWARE_SIGNATURE_SIZE         ECDSA_SIGNATURE_SIZE
 #define FIRMWARE_HASH_SIZE              SHA256_DIGEST_SIZE
 #define MAX_FIRMWARE_CHUNKS             (256)
 #define FIRMWARE_CHUNK_SIZE             (4096)
 
 // Intervalles de vérification
-#define INTEGRITY_CHECK_BOOT_DELAY_MS   (5000)
+#define INTEGRITY_CHECK_BOOT_DELAY_MS   (3000)   // Réduit grâce à ESP32 crypto
 #define INTEGRITY_CHECK_MAX_FAILURES    (3)
 
 // ================================
@@ -142,7 +136,7 @@ extern "C" {
 #define ATTESTATION_CHALLENGE_SIZE      (32)
 #define ATTESTATION_RESPONSE_SIZE       (128)
 #define ATTESTATION_MAX_RETRIES         (3)
-#define ATTESTATION_TIMEOUT_MS          (10000)
+#define ATTESTATION_TIMEOUT_MS          (5000)   // Réduit grâce à ESP32 crypto
 
 // Types d'attestation
 #define ATTESTATION_TYPE_STARTUP        (1)
@@ -211,6 +205,9 @@ typedef enum {
     SECURITY_EVENT_TAMPERING_DETECTED,
     SECURITY_EVENT_POWER_ANOMALY,
     SECURITY_EVENT_MEMORY_CORRUPTION,
+    SECURITY_EVENT_CRYPTO_ERROR,           // Nouveau: erreur crypto ESP32
+    SECURITY_EVENT_EFUSE_CORRUPTION,       // Nouveau: corruption eFuse
+    SECURITY_EVENT_SECURE_BOOT_FAILURE,    // Nouveau: échec secure boot
     SECURITY_EVENT_MAX
 } security_event_type_t;
 
@@ -233,6 +230,7 @@ typedef enum {
 typedef enum {
     SYSTEM_STATE_BOOTING = 0,
     SYSTEM_STATE_INITIALIZING,
+    SYSTEM_STATE_CRYPTO_SETUP,             // Nouveau: setup crypto ESP32
     SYSTEM_STATE_NORMAL_OPERATION,
     SYSTEM_STATE_SECURITY_ALERT,
     SYSTEM_STATE_EMERGENCY,
@@ -246,6 +244,11 @@ typedef enum {
 #define POWER_SAVE_MODE_ENABLED         (1)
 #define SLEEP_MODE_DURATION_MS          (60000)   // 1 minute
 #define WAKEUP_STUB_SIZE_BYTES          (8192)
+
+// Configuration économie d'énergie ESP32
+#define ESP32_LIGHT_SLEEP_ENABLED       (true)
+#define ESP32_CRYPTO_CLOCK_GATING       (true)    // Gating horloge crypto quand inutilisé
+#define ESP32_POWER_MANAGEMENT_ENABLED  (true)
 
 // ================================
 // Macros utilitaires
@@ -272,6 +275,14 @@ typedef enum {
     } \
 } while(0)
 
+#define CHECK_CRYPTO_ERROR(x) do { \
+    esp32_crypto_result_t __crypto_rc = (x); \
+    if (__crypto_rc != ESP32_CRYPTO_SUCCESS) { \
+        ESP_LOGE(TAG, "Erreur crypto: %s à %s:%d", esp32_crypto_error_to_string(__crypto_rc), __FILE__, __LINE__); \
+        return ESP_FAIL; \
+    } \
+} while(0)
+
 // ================================
 // Structure de configuration globale
 // ================================
@@ -281,6 +292,12 @@ typedef struct {
     uint8_t security_level;
     bool secure_boot_enabled;
     bool flash_encryption_enabled;
+    bool efuse_protection_enabled;          // Nouveau: protection eFuse
+    
+    // Configuration crypto ESP32
+    bool hardware_crypto_enabled;           // Nouveau: crypto matériel
+    bool trng_enabled;                      // Nouveau: TRNG
+    uint8_t efuse_key_blocks_used;          // Nouveau: blocs eFuse utilisés
     
     // Configuration réseau
     char wifi_ssid[WIFI_SSID_MAX_LEN];
@@ -306,6 +323,25 @@ typedef struct {
 // ================================
 
 extern global_config_t g_config;
+
+// ================================
+// Compatibilité avec ancienne version ATECC608A
+// ================================
+
+// Aliases pour compatibilité (facilitent la migration)
+#define se_manager_init()                    esp32_crypto_manager_init(NULL)
+#define se_manager_deinit()                  esp32_crypto_manager_deinit()
+#define se_get_device_info(info)             esp32_crypto_get_device_info(info)
+#define se_health_check()                    esp32_crypto_health_check()
+#define se_generate_key_pair(id, key)        esp32_crypto_generate_ecdsa_keypair(id, key)
+#define se_get_public_key(id, key)           esp32_crypto_get_public_key(id, key)
+#define se_sign_message(id, hash, sig)       esp32_crypto_ecdsa_sign(id, hash, sig)
+#define se_verify_signature(key, hash, sig)  esp32_crypto_ecdsa_verify(key, hash, sig)
+#define se_generate_random(buf, len)         esp32_crypto_generate_random(buf, len)
+#define se_perform_attestation(ch, sz, att)  esp32_crypto_perform_attestation(ch, sz, att)
+#define se_verify_integrity()                esp32_crypto_verify_integrity()
+#define se_update_heartbeat(cnt)             esp32_crypto_update_heartbeat(cnt)
+#define se_store_emergency_state()           esp32_crypto_store_emergency_state()
 
 #ifdef __cplusplus
 }
