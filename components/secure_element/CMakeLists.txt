@@ -1,31 +1,17 @@
-# Configuration du composant secure_element
+# CMakeLists.txt pour le module ESP32 Crypto Intégré
+# SecureIoT-VIF v2.0 - ESP32 Crypto Intégré
+
 idf_component_register(
     SRCS 
-        "se_manager.c"
-        "crypto_operations.c"
+        "esp32_crypto_manager.c"
     INCLUDE_DIRS 
         "include"
-    REQUIRES 
-        driver 
-        esp_system 
-        esp_log
-        nvs_flash
-    PRIV_REQUIRES 
-        freertos
-)
-
-# Configuration des flags de compilation spécifiques à la sécurité
-target_compile_options(${COMPONENT_LIB} PRIVATE
-    -Wall
-    -Wextra
-    -Werror
-    -O2
-    -fstack-protector-strong
-    -D_FORTIFY_SOURCE=2
-)
-
-# Définition des macros de configuration
-target_compile_definitions(${COMPONENT_LIB} PRIVATE
-    ATECC608A_DRIVER_VERSION="2.0.0"
-    CRYPTO_AUTH_LIB_ENABLED=1
+    REQUIRES
+        "mbedtls"
+        "nvs_flash"
+        "esp_system"
+        "esp_efuse"
+        "bootloader_support"
+    PRIV_REQUIRES
+        "esp_hw_support"
 )
