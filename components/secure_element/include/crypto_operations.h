@@ -3,10 +3,10 @@
  * @brief Opérations cryptographiques avancées pour SecureIoT-VIF
  * 
  * Ce module fournit des opérations cryptographiques de haut niveau
- * utilisant l'élément sécurisé ATECC608A et les primitives ESP32.
+ * utilisant les capacités crypto intégrées de l'ESP32.
  * 
  * @author Framework SecureIoT-VIF
- * @version 1.0.0
+ * @version 2.0.0 - ESP32 Crypto Intégré
  * @date 2025
  */
 
@@ -271,20 +271,20 @@ crypto_result_t crypto_kdf_derive_key(const crypto_kdf_params_t* params,
 crypto_result_t crypto_generate_salt(uint8_t* salt, size_t salt_len);
 
 // ================================
-// Fonctions ECC avec élément sécurisé
+// Fonctions ECC avec crypto ESP32
 // ================================
 
 /**
- * @brief Génère une paire de clés ECC dans l'élément sécurisé
+ * @brief Génère une paire de clés ECC dans le crypto ESP32
  * 
- * @param slot_id Slot de l'élément sécurisé
+ * @param slot_id Slot du crypto ESP32
  * @param keypair Structure pour stocker les clés
  * @return crypto_result_t CRYPTO_SUCCESS en cas de succès
  */
 crypto_result_t crypto_ecc_generate_keypair_se(uint8_t slot_id, crypto_ecc_keypair_t* keypair);
 
 /**
- * @brief Signe des données avec une clé privée dans l'élément sécurisé
+ * @brief Signe des données avec une clé privée dans le crypto ESP32
  * 
  * @param slot_id Slot contenant la clé privée
  * @param data Données à signer
@@ -309,7 +309,7 @@ crypto_result_t crypto_ecc_verify(const uint8_t* public_key,
                                   const crypto_ecc_signature_t* signature);
 
 /**
- * @brief Effectue un échange de clés ECDH avec l'élément sécurisé
+ * @brief Effectue un échange de clés ECDH avec le crypto ESP32
  * 
  * @param private_key_slot Slot de la clé privée locale
  * @param remote_public_key Clé publique distante
@@ -324,7 +324,7 @@ crypto_result_t crypto_ecdh_se(uint8_t private_key_slot, const uint8_t* remote_p
 // ================================
 
 /**
- * @brief Calcule un HMAC avec l'élément sécurisé
+ * @brief Calcule un HMAC avec le crypto ESP32
  * 
  * @param key_slot Slot contenant la clé HMAC
  * @param data Données à authentifier
@@ -354,7 +354,7 @@ crypto_result_t crypto_hmac_verify_se(uint8_t key_slot, const uint8_t* data, siz
 // ================================
 
 /**
- * @brief Génère des bytes aléatoires sécurisés avec l'élément sécurisé
+ * @brief Génère des bytes aléatoires sécurisés avec le crypto ESP32
  * 
  * @param buffer Buffer pour les bytes aléatoires
  * @param length Nombre de bytes à générer

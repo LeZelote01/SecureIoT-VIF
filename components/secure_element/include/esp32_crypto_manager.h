@@ -3,8 +3,7 @@
  * @brief Gestionnaire cryptographique ESP32 intégré pour SecureIoT-VIF
  * 
  * Ce module gère toutes les opérations cryptographiques en utilisant
- * les capacités matérielles intégrées de l'ESP32 (HSM, TRNG, AES, SHA, RSA)
- * remplaçant l'ATECC608A externe.
+ * les capacités matérielles intégrées de l'ESP32 (HSM, TRNG, AES, SHA, RSA).
  * 
  * @author Framework SecureIoT-VIF
  * @version 2.0.0 - ESP32 Crypto Intégré
